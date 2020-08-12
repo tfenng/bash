@@ -18,3 +18,15 @@ gpg --export --armor 51F523511C7028C3 | sudo apt-key add -
 
 echo "deb https://qgis.org/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/qgis.list
 sudo apt update; sudo apt install qgis qgis-plugin-grass
+
+# jupyter notebook
+conda install ipykernel
+python -m ipykernel install --user --name=base
+
+
+#wine
+sudo dpkg --add-architecture i386
+
+wget -qO- https://dl.winehq.org/wine-builds/Release.key | sudo apt-key add -
+sudo apt-add-repository 'deb http://dl.winehq.org/wine-builds/ubuntu/ artful main'
+sudo apt-get install --install-recommends winehq-stable
