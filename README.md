@@ -11,4 +11,4 @@
 * mem-coster.sh 给内存加压
 * mye          别名 MYSQL client for my common usage
 * tesseract.sh 识别带数值的图片，需要 tesseract
-
+* wt.sh        传入城市名的英文或拼音，显示天气预报，默认为主机的IP所在城市
