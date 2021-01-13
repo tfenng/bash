@@ -1,4 +1,4 @@
-# bash
+# bash commands
 
 * 99.sh  一行SHELL打印九九表
 * bench.sh 性能测试LIUNX主机
