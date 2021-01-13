@@ -1,9 +1,10 @@
 #!/bin/bash
 
-CITY_NAME=$1
-if [ -z $CITY_NAME ]
+CITY=$1
+echo $CITY
+if [ $CITY = "" ]
 then
-  curl wttr.in/$1
-else
   curl wttr.in
+else
+  curl "wttr.in/$CITY"
 fi
