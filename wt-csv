@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# 用法: wt-csv <文件> <值1> [值2 ...]
+#
+# 首次写入（文件不存在时）：
+#   若首值为单字符，视为分隔符（否则默认逗号），其余为列名
+#   wt-csv data.csv 姓名 工号 部门          # 默认逗号
+#   wt-csv data.csv : name empid dept       # 冒号分隔
+# 后续追加：
+#   直接传数据值，分隔符从已有文件头自动读取
+#   wt-csv data.csv Tony 20118 developer
+
+if [ $# -lt 2 ]; then
+  echo "Usage: wt-csv <file> <val1> [val2 ...]"
+  exit 1
+fi
+
+file="$1"
+shift
+vals=("$@")
+
+# --- 文件不存在：首次写入 ---
+if [ ! -f "$file" ]; then
+  # 检测第一个值是否为单字符分隔符
+  if [ ${#vals[0]} -eq 1 ] && [ ${#vals[@]} -gt 1 ]; then
+    delim="${vals[0]}"
+    cols=("${vals[@]:1}")
+  else
+    delim=","
+    cols=("${vals[@]}")
+  fi
+
+  {
+    printf "#%s" "${cols[0]}"
+    for ((i=1; i<${#cols[@]}; i++)); do
+      printf "%s%s" "$delim" "${cols[$i]}"
+    done
+    echo
+  } > "$file"
+  echo "created $file with ${#cols[@]} columns (delim='$delim'): ${cols[*]}"
+  exit 0
+fi
+
+# --- 文件已存在：从文件头读取分隔符 ---
+IFS= read -r first_line < "$file"
+if [[ $first_line != "#"* ]]; then
+  echo "error: existing file '$file' does not have a # header line"
+  exit 1
+fi
+
+raw="${first_line#"#"}"
+raw="${raw#" "}"
+
+# 从标题行自动检测分隔符
+delim=""
+for ((k=0; k<${#raw}; k++)); do
+  c="${raw:$k:1}"
+  if [[ "$c" =~ [[:punct:]] ]]; then
+    delim="$c"
+    break
+  fi
+done
+
+if [ -z "$delim" ]; then
+  echo "error: cannot detect delimiter from header line: $first_line"
+  exit 1
+fi
+
+# 校验列数
+expected=$(echo "$raw" | awk -F"$delim" '{print NF}')
+if [ ${#vals[@]} -ne "$expected" ]; then
+  echo "error: expected $expected values, got ${#vals[@]}"
+  exit 1
+fi
+
+# 追加行
+{
+  printf "%s" "${vals[0]}"
+  for ((i=1; i<${#vals[@]}; i++)); do
+    printf "%s%s" "$delim" "${vals[$i]}"
+  done
+  echo
+} >> "$file"
+
+echo "appended: ${vals[*]}"

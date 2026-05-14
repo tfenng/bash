@@ -1,0 +1,4 @@
+# name:empid:dept
+Tony:20118:developer
+Alice:20119:designer
+Bob:20120:manager

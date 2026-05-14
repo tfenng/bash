@@ -1,12 +1,21 @@
-# bash commands
+# Bash 工具箱
 
-* 99.sh  一行SHELL打印九九表
-* bench.sh 性能测试LIUNX主机
-* cat-all.sh 连接打印多个文本文件
-* cpu-coster.sh 给CPU加压
-* filesize.sh   当前目录下的文件大小总和
-* htm2txt.sh       批量HTML to TEXT files
-* his-stat.sh  历史命令使用统计
-* mem-coster.sh 给内存加压
-* mye          别名 MYSQL client for my common usage
-* wt.sh        传入城市名的英文或拼音，显示天气预报，默认为主机的IP所在城市
+日常使用的 Shell 脚本合集，涵盖系统测试、文件处理、开发辅助等场景。
+
+## 脚本列表
+
+- **99.sh** — 一行 Shell 打印九九乘法表
+- **archive_mydb.sh** — 导出 MySQL 数据库前一天的数据并打包为 zip
+- **bench.sh** — Linux 服务器性能基准测试（系统信息、磁盘 I/O、网络下载速度）
+- **cat-all.sh** — 递归查找指定目录下指定扩展名的文件，合并输出（跳过注释行）
+- **cpu-coster.sh** — 使用 sysbench 对 CPU 进行压力测试
+- **filesize.sh** — 统计当前目录下所有普通文件的总大小
+- **his-stat.sh** — 统计历史命令使用频率，输出 Top 10 最常用命令
+- **htm2txt.sh** — 批量将当前目录下的 HTML 文件转换为纯文本
+- **mem-coster.sh** — 使用 tmpfs 临时占用指定大小的内存，用于内存压力测试
+- **mye** — 通过 Docker 容器执行 MySQL 查询的快捷别名
+- **rd-csv** — 读取任意分隔符的文本文件，默认 `\t` 输出，`-d` 自定义分隔符；支持 `--json` 输出 pretty JSON；文件首行以 `#` 开头时自动作为列标题
+- **timer.sh** — 简单计时器，sleep 指定秒数并打印起止时间
+- **wc.sh** — 统计文件中的有效代码行数（排除空行和 `#` 注释行）
+- **wt-csv** — 写入 CSV 文件，首次传入列名定义标题（默认逗号分隔），后续追加行记录，自动校验列数一致
+- **wt.sh** — 查询城市天气（基于 wttr.in），支持中文/拼音/英文城市名

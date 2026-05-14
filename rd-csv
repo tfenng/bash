@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# 用法: rd-csv [--json] [-d <输出分隔符>] <文件> [列名1 [列名2 ...]]
+#
+# 输入分隔符从文件头 (# 行) 或首行数据自动检测
+# 输出分隔符默认 \t，可通过 -d 自定义（如 , ; |）
+# 列名优先级：CLI 参数 > 文件头 (# 行) > 自动编号
+#
+# 示例:
+#   rd-csv employees.txt
+#     → 文件含 # name:empid:dept，\t 分隔输出
+#   rd-csv -d , employees.txt
+#     → 逗号分隔输出
+#   rd-csv --json employees.txt
+#     → JSON 输出
+
+json_mode=false
+odelim=$'\t'
+
+while [[ "$1" == -* ]]; do
+  case "$1" in
+    --json) json_mode=true; shift ;;
+    -d) odelim="$2"; shift 2 ;;
+    *) break ;;
+  esac
+done
+
+if [ $# -lt 1 ]; then
+  echo "Usage: rd-csv [--json] [-d <out_delim>] <file> [col_name1 col_name2 ...]"
+  exit 1
+fi
+
+file="$1"
+shift
+cli_cols=("$@")
+
+# --- 检测文件头部列标题行 及 输入分隔符 ---
+skip=0
+header_cols=()
+delim=""
+
+IFS= read -r first_line < "$file"
+if [[ $first_line == "#"* ]]; then
+  skip=1
+  raw="${first_line#"#"}"
+  raw="${raw#" "}"
+  # 从标题行检测输入分隔符
+  for ((k=0; k<${#raw}; k++)); do
+    c="${raw:$k:1}"
+    if [[ "$c" =~ [[:punct:]] ]]; then
+      delim="$c"
+      break
+    fi
+  done
+  if [ -n "$delim" ]; then
+    IFS="$delim" read -r -a header_cols <<< "$raw"
+  fi
+fi
+
+# 若标题行未检测到分隔符，从首行数据检测
+if [ -z "$delim" ]; then
+  if [ $skip -eq 0 ]; then
+    peek="$first_line"
+  else
+    peek=$(tail -n +$((skip + 1)) "$file" | head -n 1)
+  fi
+  for ((k=0; k<${#peek}; k++)); do
+    c="${peek:$k:1}"
+    if [[ "$c" =~ [[:punct:]] ]]; then
+      delim="$c"
+      break
+    fi
+  done
+fi
+
+# 仍未检测到，默认逗号
+[ -z "$delim" ] && delim=","
+
+# --- 确定最终列名：CLI 优先，其次文件头 ---
+if [ ${#cli_cols[@]} -gt 0 ]; then
+  cols=("${cli_cols[@]}")
+elif [ ${#header_cols[@]} -gt 0 ]; then
+  cols=("${header_cols[@]}")
+fi
+
+# --- JSON 输出 ---
+if $json_mode; then
+  if [ ${#cols[@]} -eq 0 ]; then
+    first_data=$(tail -n +$((skip + 1)) "$file" | head -n 1)
+    IFS="$delim" read -r -a first_vals <<< "$first_data"
+    for ((i=0; i<${#first_vals[@]}; i++)); do
+      cols+=("col$((i+1))")
+    done
+  fi
+
+  echo "["
+  first_row=true
+  tail -n +$((skip + 1)) "$file" | while IFS="$delim" read -r -a vals; do
+    $first_row || echo ","
+    first_row=false
+    printf "  {"
+    first_col=true
+    for ((i=0; i<${#cols[@]} && i<${#vals[@]}; i++)); do
+      $first_col || printf ","
+      first_col=false
+      val="${vals[$i]}"
+      val="${val//\\/\\\\}"
+      val="${val//\"/\\\"}"
+      printf '\n    "%s": "%s"' "${cols[$i]}" "$val"
+    done
+    printf '\n  }'
+  done
+  echo ""
+  echo "]"
+  exit 0
+fi
+
+# --- 默认列格式输出（\t 分隔，可通过 -d 自定义）---
+tail -n +$((skip + 1)) "$file" | while IFS="$delim" read -r -a vals; do
+  for ((i=0; i<${#vals[@]}; i++)); do
+    [ $i -gt 0 ] && printf "%s" "$odelim"
+    printf "%s" "${vals[$i]}"
+  done
+  echo
+done

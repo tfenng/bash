@@ -1,2 +1,30 @@
 #!/bin/bash
-docker exec -it mysql mysql -utony -ptony -Dtony -e"$1"
+
+# 用法:
+#   mye "SQL"                → user=tony, pass=tony, db=tony
+#   mye user "SQL"           → user, pass, db 均为 user
+#   mye user db "SQL"        → user, pass=user, db
+
+case $# in
+  1)
+    USER="tony"
+    DB="tony"
+    SQL="$1"
+    ;;
+  2)
+    USER="$1"
+    DB="$1"
+    SQL="$2"
+    ;;
+  3)
+    USER="$1"
+    DB="$2"
+    SQL="$3"
+    ;;
+  *)
+    echo "Usage: mye [user] [db] \"SQL statement\""
+    exit 1
+    ;;
+esac
+
+docker exec -it mysql mysql -u"$USER" -p"$USER" -D"$DB" -e"$SQL"
