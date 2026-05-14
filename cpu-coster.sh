@@ -5,5 +5,4 @@ then
   exit
 fi
 
-size=$1
 sysbench --num-threads=4 --test=cpu --cpu-max-prime=$1 run

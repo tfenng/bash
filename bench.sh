@@ -183,9 +183,9 @@ systeminfo () {
 	sleep 0.1
 
 	# RAM Information
-	tram="$( free -m | grep Mem | awk 'NR=1 {print $2}' ) MiB"
-	fram="$( free -m | grep Mem | awk 'NR=1 {print $7}' ) MiB"
-	fswap=$( free -m | grep Swap | awk 'NR=1 {print $4}' )MiB
+	tram="$( free -m | grep Mem | awk 'NR==1 {print $2}' ) MiB"
+	fram="$( free -m | grep Mem | awk 'NR==1 {print $7}' ) MiB"
+	fswap=$( free -m | grep Swap | awk 'NR==1 {print $4}' )MiB
 	echo " Total RAM   : $tram (Free $fram)" | tee -a $log
 	sleep 0.1
 
@@ -434,7 +434,7 @@ iotest () {
 	# RAM Speed test
 	# set ram allocation for mount
 	tram_mb="$( free -m | grep Mem | awk 'NR=1 {print $2}' )"
-	if [[ tram_mb -gt 1900 ]]; then
+	if [[ $tram_mb -gt 1900 ]]; then
 		sbram=1024M
 		sbcount=2048
 	else

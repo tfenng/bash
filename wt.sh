@@ -2,7 +2,7 @@
 
 CITY=$1
 echo $CITY
-if [ $CITY = "" ]
+if [ -z "$CITY" ]
 then
   curl wttr.in
 else

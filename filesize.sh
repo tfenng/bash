@@ -1,7 +1,7 @@
 #!/bin/bash
 
-for filesize in $(ls -l . | grep "^-" | awk '{print $5}')
-do
-  let totalsize=$totalsize+$filesize
-done
-echo "Total file size in current diretory: $totalsize"
+totalsize=0
+while IFS= read -r filesize; do
+  totalsize=$((totalsize + filesize))
+done < <(ls -l . | awk '/^-/ {print $5}')
+echo "Total file size in current directory: $totalsize"

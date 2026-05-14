@@ -9,7 +9,6 @@ dir=$1
 ext=$2
 cmd="find $dir -type f -name \"*.$ext\""
 
-for sf in `eval $cmd`
-do
-	cat $sf | sed '/^\s*#/d'
-done
+while IFS= read -r sf; do
+	cat "$sf" | sed '/^\s*#/d'
+done < <(eval "$cmd")
